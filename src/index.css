@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 213 45% 18%;
+    --foreground: 210 40% 98%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 45% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 45% 18%;
+
+    --primary: 205 85% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 213 30% 25%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 20% 92%;
+    --muted-foreground: 213 30% 40%;
+
+    --accent: 195 70% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 20% 80%;
+    --input: 214 20% 85%;
+    --ring: 205 85% 45%;
+
+    --radius: 0.5rem;
+
+    /* Custom hospital theme tokens */
+    --hospital-navy: 213 45% 18%;
+    --hospital-navy-light: 213 35% 28%;
+    --hospital-cyan: 195 70% 50%;
+    --hospital-blue: 205 85% 45%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 213 45% 12%;
+    --foreground: 210 40% 98%;
+
+    --card: 213 45% 15%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 213 45% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 205 85% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 213 30% 22%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 213 30% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 195 70% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 213 30% 25%;
+    --input: 213 30% 25%;
+    --ring: 205 85% 50%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-arabic {
+    font-family: 'Noto Sans Arabic', sans-serif;
+  }
+}
