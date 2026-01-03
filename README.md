@@ -44,8 +44,33 @@ The backend API runs on `http://localhost:3001` by default.
 
 ## Deployment
 
-For production deployment, please refer to the **[HOSTING_GUIDE.md](HOSTING_GUIDE.md)**. It covers:
-- System preparation (Ubuntu 24.04)
-- Installing Nginx and PM2
-- Configuring Nginx as a reverse proxy
-- SSL/HTTPS setup
+For production deployment, please refer to the **[HOSTING_GUIDE.md](HOSTING_GUIDE.md)**.
+
+### Nginx Configuration (Reverse Proxy)
+
+Here is a standard Nginx configuration to serve the frontend and proxy API requests:
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com; # Replace with your domain/IP
+
+    root /var/www/launchpad/dist;
+    index index.html;
+
+    # Serve Frontend
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API Requests
+    location /api/ {
+        proxy_pass http://localhost:3001/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
