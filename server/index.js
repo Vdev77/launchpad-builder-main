@@ -84,7 +84,14 @@ async function initializeDatabase() {
         'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS screen_resolution TEXT',
         'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS timezone TEXT',
         'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS network_info TEXT',
-        'ALTER TABLE security_audit_log ADD COLUMN IF NOT EXISTS input_details TEXT'
+        'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS country TEXT',
+        'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS city TEXT',
+        'ALTER TABLE visitor_audit_log ADD COLUMN IF NOT EXISTS isp TEXT',
+
+        'ALTER TABLE security_audit_log ADD COLUMN IF NOT EXISTS input_details TEXT',
+        'ALTER TABLE security_audit_log ADD COLUMN IF NOT EXISTS country TEXT',
+        'ALTER TABLE security_audit_log ADD COLUMN IF NOT EXISTS city TEXT',
+        'ALTER TABLE security_audit_log ADD COLUMN IF NOT EXISTS isp TEXT'
       ];
 
       for (const query of columnsToAdd) {
@@ -106,9 +113,54 @@ async function initializeDatabase() {
 
 // Helper: Get Client IP
 const getClientIp = (req) => {
-  // express 'trust proxy' populates req.ip correctly.
-  return req.ip || req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+  // Check Cloudflare header first
+  const cfIp = req.headers['cf-connecting-ip'];
+  if (cfIp) return cfIp;
+
+  // Check X-Forwarded-For (standard proxy header)
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  if (xForwardedFor) {
+    // The first IP in the list is the original client IP
+    const ips = xForwardedFor.split(',').map(ip => ip.trim());
+    if (ips[0]) return ips[0];
+  }
+
+  // Fallback to connection remote address
+  let ip = req.connection.remoteAddress || req.socket.remoteAddress || '';
+
+  // Handle IPv6-mapped IPv4 addresses (::ffff:127.0.0.1 -> 127.0.0.1)
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7);
+  }
+
+  // Handle localhost IPv6 loopback
+  if (ip === '::1') {
+    return '127.0.0.1';
+  }
+
+  try {
+    // Validate basic IP format to prevent injection or errors
+    if (ip.includes('::')) return '127.0.0.1'; // simplified fallback for raw IPv6
+    return ip;
+  } catch {
+    return '127.0.0.1';
+  }
 };
+
+// Helper: Fetch IP Details
+async function fetchIpDetails(ip) {
+  if (ip === '127.0.0.1' || ip === 'localhost' || ip === '::1') return { country: 'Local', city: 'Host', isp: 'Loopback' };
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,city,isp`);
+    const data = await response.json();
+    if (data.status === 'success') {
+      return { country: data.country, city: data.city, isp: data.isp };
+    }
+  } catch (error) {
+    console.error('Geo fetch failed:', error.message);
+  }
+  return { country: null, city: null, isp: null };
+}
 
 // Routes
 
@@ -120,9 +172,10 @@ app.post('/api/auth/register', async (req, res) => {
 
   const logAttempt = async (status, reason = null) => {
     try {
+      const { country, city, isp } = await fetchIpDetails(ip_address);
       await pool.query(
-        'INSERT INTO security_audit_log (email, ip_address, user_agent, attempt_type, status, failure_reason, input_details) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [email, ip_address, user_agent, 'registration', status, reason, JSON.stringify(req.body)]
+        'INSERT INTO security_audit_log (email, ip_address, user_agent, attempt_type, status, failure_reason, input_details, country, city, isp) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+        [email, ip_address, user_agent, 'registration', status, reason, JSON.stringify(req.body), country, city, isp]
       );
     } catch (e) { console.error('Log failed', e); }
   };

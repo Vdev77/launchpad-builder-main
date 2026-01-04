@@ -36,6 +36,7 @@ export const api = {
 
                 await fetch(`${API_URL}/log-visitor`, {
                     method: 'POST',
+                    keepalive: true, // Ensure request is sent even if page unloads
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         page_visited,

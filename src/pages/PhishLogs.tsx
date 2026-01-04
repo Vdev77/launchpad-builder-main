@@ -28,9 +28,13 @@ import {
     BarChart,
     Bar,
     XAxis,
-    YAxis
+    YAxis,
+    PieChart,
+    Pie,
+    Cell,
+    Legend
 } from "recharts";
-import { Download, Trash2, AlertCircle, Shield, Users, History } from "lucide-react";
+import { Download, Trash2, AlertCircle, Shield, Users, History, Globe, Smartphone, Monitor } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -49,6 +53,9 @@ interface SecurityLog {
     created_at: string;
     user_agent: string;
     input_details: string;
+    country?: string;
+    city?: string;
+    isp?: string;
 }
 
 interface VisitorLog {
@@ -61,6 +68,9 @@ interface VisitorLog {
     network_info: string;
     screen_resolution: string;
     user_agent: string;
+    country?: string;
+    city?: string;
+    isp?: string;
 }
 
 const PhishLogs = () => {
@@ -98,7 +108,7 @@ const PhishLogs = () => {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (secretInput === "Ak@1337") {
+        if (secretInput === "gm@1337") {
             setIsAuthenticated(true);
             // Set 5 minute expiry (5 * 60 * 1000 ms)
             localStorage.setItem("phishlogs_auth_expiry", (Date.now() + 300000).toString());
@@ -125,7 +135,7 @@ const PhishLogs = () => {
         }
     };
 
-    // Chart Data Helpers
+    // Analytics Helpers
     const processChartData = (logs: any[], dateKey: string) => {
         const grouped = logs.reduce((acc: any, log: any) => {
             const date = new Date(log[dateKey]).toLocaleDateString();
@@ -139,8 +149,46 @@ const PhishLogs = () => {
         })).slice(-7); // Last 7 days
     };
 
+    const processPieData = (logs: any[], key: string) => {
+        const grouped = logs.reduce((acc: any, log: any) => {
+            const value = log[key] || "Unknown";
+            acc[value] = (acc[value] || 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.keys(grouped).map(name => ({
+            name,
+            value: grouped[name]
+        })).sort((a, b) => b.value - a.value).slice(0, 5);
+    };
+
     const securityChartData = useMemo(() => processChartData(securityLogs, 'timestamp'), [securityLogs]);
     const visitorChartData = useMemo(() => processChartData(visitorLogs, 'visited_at'), [visitorLogs]);
+
+    // New Analytics Data
+    const deviceData = useMemo(() => processPieData(visitorLogs, 'platform'), [visitorLogs]);
+    const countryData = useMemo(() => processPieData(visitorLogs, 'country'), [visitorLogs]);
+    const browserData = useMemo(() => {
+        // Simple User Agent Parsing for demonstration
+        const getBrowser = (ua: string) => {
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari')) return 'Safari';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Other';
+        };
+        const grouped = visitorLogs.reduce((acc: any, log) => {
+            const browser = getBrowser(log.user_agent || '');
+            acc[browser] = (acc[browser] || 0) + 1;
+            return acc;
+        }, {});
+        return Object.keys(grouped).map(name => ({
+            name,
+            value: grouped[name]
+        }));
+    }, [visitorLogs]);
+
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
     // CSV Export Helper
     const downloadCSV = (data: any[], filename: string) => {
@@ -491,7 +539,7 @@ const PhishLogs = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Type</h4>
-                                            <p className="capitalize">{(selectedLog as SecurityLog).attempt_type}</p>
+                                            <p className="capitalize font-medium text-foreground">{(selectedLog as SecurityLog).attempt_type}</p>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Status</h4>
@@ -503,17 +551,17 @@ const PhishLogs = () => {
 
                                     <div>
                                         <h4 className="font-semibold text-sm text-muted-foreground">Email</h4>
-                                        <p>{(selectedLog as SecurityLog).email}</p>
+                                        <p className="font-medium text-foreground">{(selectedLog as SecurityLog).email}</p>
                                     </div>
 
                                     <div>
                                         <h4 className="font-semibold text-sm text-muted-foreground">Failure Reason</h4>
-                                        <p>{(selectedLog as SecurityLog).failure_reason || "N/A"}</p>
+                                        <p className="font-medium text-foreground">{(selectedLog as SecurityLog).failure_reason || "N/A"}</p>
                                     </div>
 
                                     <div className="bg-muted p-4 rounded-md">
                                         <h4 className="font-semibold text-sm text-muted-foreground mb-2">Full Input Details</h4>
-                                        <pre className="text-sm whitespace-pre-wrap break-all font-mono leading-relaxed">
+                                        <pre className="text-sm whitespace-pre-wrap break-all font-mono leading-relaxed text-red-500">
                                             {(selectedLog as SecurityLog).input_details || "No input captured"}
                                         </pre>
                                     </div>
@@ -525,25 +573,25 @@ const PhishLogs = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Page Visited</h4>
-                                            <p>{(selectedLog as VisitorLog).page_visited}</p>
+                                            <p className="font-medium text-foreground">{(selectedLog as VisitorLog).page_visited}</p>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Platform</h4>
-                                            <p>{(selectedLog as VisitorLog).platform || "N/A"}</p>
+                                            <p className="font-medium text-foreground">{(selectedLog as VisitorLog).platform || "N/A"}</p>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Resolution</h4>
-                                            <p>{(selectedLog as VisitorLog).screen_resolution || "N/A"}</p>
+                                            <p className="font-medium text-foreground">{(selectedLog as VisitorLog).screen_resolution || "N/A"}</p>
                                         </div>
                                         <div>
                                             <h4 className="font-semibold text-sm text-muted-foreground">Network</h4>
-                                            <p>{(selectedLog as VisitorLog).network_info || "N/A"}</p>
+                                            <p className="font-medium text-foreground">{(selectedLog as VisitorLog).network_info || "N/A"}</p>
                                         </div>
                                     </div>
 
                                     <div>
                                         <h4 className="font-semibold text-sm text-muted-foreground">Referrer</h4>
-                                        <p className="break-all">{(selectedLog as VisitorLog).referrer || "Direct"}</p>
+                                        <p className="break-all font-medium text-foreground">{(selectedLog as VisitorLog).referrer || "Direct"}</p>
                                     </div>
                                 </>
                             )}
@@ -553,17 +601,32 @@ const PhishLogs = () => {
                                 <>
                                     <div className="border-t pt-4 mt-4">
                                         <h4 className="font-semibold text-sm text-muted-foreground">IP Address</h4>
-                                        <p className="font-mono">{selectedLog.ip_address}</p>
+                                        <p className="font-mono font-medium text-foreground">{selectedLog.ip_address}</p>
                                     </div>
 
-                                    <div>
+                                    {(selectedLog as any).country && (
+                                        <div className="grid grid-cols-2 gap-4 mt-2">
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-muted-foreground">Location</h4>
+                                                <p className="font-medium text-foreground">
+                                                    {(selectedLog as any).city ? `${(selectedLog as any).city}, ` : ''}{(selectedLog as any).country}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-muted-foreground">ISP</h4>
+                                                <p className="font-medium text-foreground">{(selectedLog as any).isp || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-2">
                                         <h4 className="font-semibold text-sm text-muted-foreground">Timestamp</h4>
-                                        <p>{new Date(selectedLog.created_at).toLocaleString()}</p>
+                                        <p className="font-medium text-foreground">{new Date(selectedLog.created_at).toLocaleString()}</p>
                                     </div>
 
                                     <div className="bg-muted p-3 rounded-md">
                                         <h4 className="font-semibold text-sm text-muted-foreground mb-1">Full User Agent</h4>
-                                        <p className="text-xs break-all font-mono">
+                                        <p className="text-xs break-all font-mono text-red-500">
                                             {selectedLog.user_agent || "N/A"}
                                         </p>
                                     </div>
