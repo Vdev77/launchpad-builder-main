@@ -25,8 +25,8 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   port: process.env.PGPORT,
   ssl: {
-    rejectUnauthorized: true,
-    ca: fs.readFileSync(path.join(__dirname, 'ca-certificate.crt')).toString(),
+    rejectUnauthorized: false
+    // ca: fs.readFileSync(path.join(__dirname, 'ca-certificate.crt')).toString(),
   }
 });
 
