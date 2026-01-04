@@ -62,5 +62,31 @@ export const api = {
                 console.error('Failed to log security event', e);
             }
         }
+    },
+    logs: {
+        getSecurityLogs: async () => {
+            const res = await fetch(`${API_URL}/logs/security`);
+            if (!res.ok) throw new Error('Failed to fetch security logs');
+            return res.json();
+        },
+        deleteSecurityLogs: async () => {
+            const res = await fetch(`${API_URL}/logs/security`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Failed to delete security logs');
+            return res.json();
+        },
+        deleteVisitorLogs: async () => {
+            const res = await fetch(`${API_URL}/logs/visitors`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Failed to delete visitor logs');
+            return res.json();
+        },
+        getVisitorLogs: async () => {
+            const res = await fetch(`${API_URL}/logs/visitors`);
+            if (!res.ok) throw new Error('Failed to fetch visitor logs');
+            return res.json();
+        }
     }
 };

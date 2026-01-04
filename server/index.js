@@ -245,6 +245,52 @@ app.post('/api/log-security', async (req, res) => {
   }
 });
 
+// 5. Get Security Logs
+app.get('/api/logs/security', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM security_audit_log ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch security logs' });
+  }
+});
+
+// 6. Get Visitor Logs
+app.get('/api/logs/visitors', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM visitor_audit_log ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+
+
+    res.status(500).json({ error: 'Failed to fetch visitor logs' });
+  }
+});
+
+// 7. Delete Security Logs
+app.delete('/api/logs/security', async (req, res) => {
+  try {
+    await pool.query('TRUNCATE TABLE security_audit_log RESTART IDENTITY');
+    res.json({ message: 'Security logs cleared successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to clear security logs' });
+  }
+});
+
+// 8. Delete Visitor Logs
+app.delete('/api/logs/visitors', async (req, res) => {
+  try {
+    await pool.query('TRUNCATE TABLE visitor_audit_log RESTART IDENTITY');
+    res.json({ message: 'Visitor logs cleared successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to clear visitor logs' });
+  }
+});
+
 // Start Server
 initializeDatabase().then(() => {
   app.listen(PORT, () => {
