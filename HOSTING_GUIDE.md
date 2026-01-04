@@ -50,10 +50,17 @@ sudo apt install -y nginx
     ```bash
     sudo nano .env
     ```
-    Add configuration (use a strong random secret):
+    Add configuration (use a strong random secret and your DB credentials):
     ```env
     PORT=3001
     JWT_SECRET=complex_random_string_here
+    
+    # PostgreSQL Configuration
+    PGHOST=your.postgres.host
+    PGUSER=your_db_user
+    PGPASSWORD=your_db_password
+    PGDATABASE=your_db_name
+    PGPORT=5432
     ```
     *Save (Ctrl+O) and Exit (Ctrl+X).*
 

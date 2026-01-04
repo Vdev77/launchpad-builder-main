@@ -1,13 +1,13 @@
 # Launchpad Builder
 
-This project is a full-stack web application built with **React (Vite)** for the frontend and **Node.js (Express)** with **SQLite** for the backend.
+This project is a full-stack web application built with **React (Vite)** for the frontend and **Node.js (Express)** with **PostgreSQL** for the backend.
 
 ## Project Structure
 
 - **[src/](src/)**: Frontend source code (React, TypeScript, Tailwind CSS).
-- **[server/](server/)**: Backend API source code (Express, SQLite).
+- **[server/](server/)**: Backend API source code (Express, PostgreSQL).
 - **[HOSTING_GUIDE.md](HOSTING_GUIDE.md)**: Comprehensive guide for hosting on Ubuntu 24.04 with Nginx.
-- **[SETUP_README.md](SETUP_README.md)**: Additional setup instructions (Note: mentions MySQL, but this project is currently configured for SQLite).
+- **[DEPLOYMENT_UPDATE.md](DEPLOYMENT.md)**: Guide for deploying updates and maintaining the production server.
 
 ## Quick Start
 

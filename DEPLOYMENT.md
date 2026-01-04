@@ -46,13 +46,54 @@ After uploading the files, SSH into your server and run these commands:
 
 ---
 
-## 3. Rebuild Frontend (If needed)
-If you updated the frontend code:
-1.  Navigate to root:
-    ```bash
-    cd /var/www/launchpad
-    ```
 2.  Build:
     ```bash
     npm run build
     ```
+
+---
+
+## 4. How to Update Specific Files in Production
+
+If you need to update a single file (like `PhishLogs.tsx` or `index.js`) without doing a full git pull, follow these steps:
+
+### Option A: Using Git (Recommended)
+1.  **Commit & Push** your changes locally:
+    ```bash
+    git add .
+    git commit -m "Update PhishLogs"
+    git push origin main
+    ```
+2.  **Pull** on the server:
+    ```bash
+    cd /var/www/launchpad
+    git pull origin main
+    ```
+3.  **Rebuild/Restart**:
+    *   If **Frontend** changed (`src/...`):
+        ```bash
+        npm install  # if deps changed
+        npm run build
+        ```
+    *   If **Backend** changed (`server/...`):
+        ```bash
+        cd server
+        npm install # if deps changed
+        pm2 restart launchpad-api
+        ```
+
+### Option B: Manual File Update (Quick Fix)
+1.  **Upload** the modified file to the server (overwrite the existing one).
+    *   *Frontend file location*: `/var/www/launchpad/src/...`
+    *   *Backend file location*: `/var/www/launchpad/server/...`
+
+2.  **Apply Changes**:
+    *   **Frontend**: You MUST rebuild the project for the change to take effect.
+        ```bash
+        cd /var/www/launchpad
+        npm run build
+        ```
+    *   **Backend**: You MUST restart the node process.
+        ```bash
+        pm2 restart launchpad-api
+        ```
