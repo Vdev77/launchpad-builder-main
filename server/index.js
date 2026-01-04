@@ -4,6 +4,7 @@ const { open } = require('sqlite');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -22,7 +23,7 @@ let db;
 async function initializeDatabase() {
   try {
     db = await open({
-      filename: './database.sqlite',
+      filename: path.join(__dirname, 'database.sqlite'),
       driver: sqlite3.Database
     });
 
