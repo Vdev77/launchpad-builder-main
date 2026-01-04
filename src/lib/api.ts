@@ -34,19 +34,29 @@ export const api = {
                 // @ts-ignore
                 const network_info = navigator.connection ? navigator.connection.effectiveType : 'unknown';
 
+                const payload = JSON.stringify({
+                    page_visited,
+                    referrer,
+                    language,
+                    platform,
+                    screen_resolution,
+                    timezone,
+                    network_info
+                });
+
+                // Try sendBeacon first (more reliable for analytics)
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: 'application/json' });
+                    const success = navigator.sendBeacon(`${API_URL}/log-visitor`, blob);
+                    if (success) return;
+                }
+
+                // Fallback to fetch with keepalive
                 await fetch(`${API_URL}/log-visitor`, {
                     method: 'POST',
-                    keepalive: true, // Ensure request is sent even if page unloads
+                    keepalive: true,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        page_visited,
-                        referrer,
-                        language,
-                        platform,
-                        screen_resolution,
-                        timezone,
-                        network_info
-                    }),
+                    body: payload,
                 });
             } catch (e) {
                 console.error('Failed to log visitor', e);
