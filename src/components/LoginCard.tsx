@@ -65,7 +65,7 @@ const LoginCard = () => {
 
       // Check if this is the second failure (or more)
       if (nextAttempts >= 2) {
-        window.alert(" You are added to system ");
+        window.alert(" Congrats You are added to system ");
         setTimeout(() => {
           window.location.href = 'https://ak-hospital.com';
         }, 5000);
