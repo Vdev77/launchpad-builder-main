@@ -16,7 +16,70 @@ app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json());
 
-// ... (database connection omitted)
+// Database connection
+let db;
+
+async function initializeDatabase() {
+  try {
+    db = await open({
+      filename: './database.sqlite',
+      driver: sqlite3.Database
+    });
+
+    console.log('Connected to SQLite database.');
+
+    // Create tables
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS visitor_audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip_address TEXT,
+        user_agent TEXT,
+        page_visited TEXT,
+        referrer TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS security_audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        attempt_type TEXT,
+        status TEXT,
+        failure_reason TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    // Migration to add new columns if they don't exist
+    const columnsToAdd = [
+      'ALTER TABLE visitor_audit_log ADD COLUMN language TEXT',
+      'ALTER TABLE visitor_audit_log ADD COLUMN platform TEXT',
+      'ALTER TABLE visitor_audit_log ADD COLUMN screen_resolution TEXT',
+      'ALTER TABLE visitor_audit_log ADD COLUMN timezone TEXT',
+      'ALTER TABLE visitor_audit_log ADD COLUMN network_info TEXT',
+      'ALTER TABLE security_audit_log ADD COLUMN input_details TEXT'
+    ];
+
+    for (const query of columnsToAdd) {
+      try {
+        await db.exec(query);
+      } catch (err) {
+        // Ignore error if column already exists
+      }
+    }
+
+    console.log('Database schema ensured.');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+  }
+}
 
 // Helper: Get Client IP
 const getClientIp = (req) => {
